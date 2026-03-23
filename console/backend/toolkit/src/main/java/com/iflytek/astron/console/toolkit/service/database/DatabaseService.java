@@ -860,7 +860,7 @@ public class DatabaseService extends ServiceImpl<DbInfoMapper, DbInfo> {
                     DBOperateEnum.SELECT.getCode(),
                     dto.getExecDev());
 
-            String countDml = "SELECT COUNT(*) FROM " + table;
+            String countDml = "SELECT COUNT(*) AS count FROM " + table;
             Long total = (Long) coreSystemService.execDML(
                     countDml,
                     UserInfoManagerHandler.getUserId(),
