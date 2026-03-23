@@ -70,9 +70,15 @@ const OfficialModelContent: React.FC = () => {
   const { t } = useTranslation();
   const { state, actions } = useModelContext();
   const filters = useModelFilters();
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [selectedCard, setSelectedCard] = useState<OfficialProviderCard | null>(
     null
   );
+
+  const handleProviderChange = (provider?: string) => {
+    setSelectedProvider(provider || '');
+  };
 
   const providerCards = useMemo<OfficialProviderCard[]>(
     () => [
@@ -159,12 +165,12 @@ const OfficialModelContent: React.FC = () => {
   };
 
   const visibleCards = useMemo(() => {
-    const keyword = state.searchInput.trim().toLowerCase();
+    const keyword = searchInput.trim().toLowerCase();
 
     return providerCards.filter(card => {
       // 这里我们检查的是具体的模型提供商
       const matchedProvider =
-        !state.providerFilter || state.providerFilter === card.provider;
+        !selectedProvider || selectedProvider === card.provider;
       const matchedKeyword =
         !keyword ||
         card.title.toLowerCase().includes(keyword) ||
@@ -174,7 +180,7 @@ const OfficialModelContent: React.FC = () => {
 
       return matchedProvider && matchedKeyword;
     });
-  }, [providerCards, state.providerFilter, state.searchInput]);
+  }, [providerCards, selectedProvider, searchInput]);
 
   return (
     <div className="w-full h-screen flex flex-col page-container-inner-UI">
@@ -182,8 +188,8 @@ const OfficialModelContent: React.FC = () => {
         <ModelManagementHeader
           activeTab="officialModel"
           shelfOffModel={[]}
-          searchInput={state.searchInput}
-          setSearchInput={filters.handleSearchInputChange}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
           setShowShelfOnly={() => undefined}
         />
       </div>
@@ -193,9 +199,9 @@ const OfficialModelContent: React.FC = () => {
           <aside className="w-full lg:w-[224px] max-w-[224px] min-w-[180px] flex-shrink-0 rounded-[18px] bg-[#FFFFFF] overflow-y-auto hide-scrollbar shadow-sm">
             <CategoryAside
               tree={[]}
-              providerFilter={state.providerFilter}
+              providerFilter={selectedProvider}
               providerOptions={getSpecificProviderOptions()}
-              onProviderChange={filters.handleProviderFilterChange}
+              onProviderChange={handleProviderChange}
               showContextLength={false}
               showModelStatus={false}
             />
