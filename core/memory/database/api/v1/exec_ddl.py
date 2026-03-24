@@ -251,7 +251,9 @@ def _validate_name_pattern_ddl(
             span_context.add_error_event(
                 f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported"
             )
-            logger.error(f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported")
+            logger.error(
+                f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported"
+            )
             return format_response(
                 code=CodeEnum.DDLNotAllowed.code,
                 message=f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported",
@@ -263,7 +265,9 @@ def _validate_name_pattern_ddl(
             span_context.add_error_event(
                 f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported"
             )
-            logger.error(f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported")
+            logger.error(
+                f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported"
+            )
             return format_response(
                 code=CodeEnum.DDLNotAllowed.code,
                 message=f"{name_type}: '{name}' does not conform to rules, only letters and underscores are supported",

@@ -1084,7 +1084,9 @@ async def _dml_split(
             span_context.add_error_event(
                 f"Table does not exist or no permission: {', '.join(not_found)}"
             )
-            logger.error(f"Table does not exist or no permission: {', '.join(not_found)}")
+            logger.error(
+                f"Table does not exist or no permission: {', '.join(not_found)}"
+            )
             return None, format_response(
                 code=CodeEnum.NoAuthorityError.code,
                 message=f"Table does not exist or no permission: "

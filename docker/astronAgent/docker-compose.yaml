@@ -199,7 +199,7 @@ services:
     container_name: astron-agent-core-database
     environment:
       SERVICE_PORT: "${CORE_DATABASE_PORT:-7990}"
-      DB_TYPE: "${DATABASE_DB_TYPE:-postgresql}"
+      DB_TYPE: "${DB_TYPE:-postgresql}"
       PGSQL_HOST: "${POSTGRES_HOST:-postgres}"
       PGSQL_PORT: "${POSTGRES_PORT:-5432}"
       PGSQL_USER: "${POSTGRES_USER:-spark}"

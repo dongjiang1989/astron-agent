@@ -7,15 +7,14 @@ database-specific dialect (MySQL or PostgreSQL) to avoid parsing errors.
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
-from memory.database.api.v1.exec_ddl import is_ddl_allowed, _rebuild_ddl_from_ast
+from memory.database.api.v1.exec_ddl import _rebuild_ddl_from_ast, is_ddl_allowed
 from memory.database.api.v1.exec_dml import rewrite_dml_with_uid_and_limit
 from memory.database.repository.middleware.adapters import get_adapter
-from memory.database.repository.middleware.adapters.registry import reset_adapter
 from memory.database.repository.middleware.adapters.mysql_adapter import MySQLAdapter
 from memory.database.repository.middleware.adapters.postgresql_adapter import (
     PostgreSQLAdapter,
 )
+from memory.database.repository.middleware.adapters.registry import reset_adapter
 
 
 class TestDDLDialectCompatibility:
@@ -47,7 +46,9 @@ class TestDDLDialectCompatibility:
             """
 
             result = is_ddl_allowed(mysql_ddl, mock_span_context)
-            assert result is True, "MySQL CREATE TABLE with AUTO_INCREMENT should be allowed"
+            assert (
+                result is True
+            ), "MySQL CREATE TABLE with AUTO_INCREMENT should be allowed"
 
     def test_is_ddl_allowed_postgresql_create_table_with_serial(self) -> None:
         """Test PostgreSQL-specific CREATE TABLE with SERIAL."""
@@ -67,7 +68,9 @@ class TestDDLDialectCompatibility:
             """
 
             result = is_ddl_allowed(pg_ddl, mock_span_context)
-            assert result is True, "PostgreSQL CREATE TABLE with SERIAL should be allowed"
+            assert (
+                result is True
+            ), "PostgreSQL CREATE TABLE with SERIAL should be allowed"
 
     def test_is_ddl_allowed_mysql_alter_table(self) -> None:
         """Test MySQL-specific ALTER TABLE syntax."""
@@ -245,7 +248,9 @@ class TestDMLDialectCompatibility:
             adapter = get_adapter()
             assert isinstance(adapter, MySQLAdapter)
 
-            test_dml = "INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"
+            test_dml = (
+                "INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"
+            )
             app_id = "app123"
             uid = "user456"
 
@@ -267,7 +272,9 @@ class TestDMLDialectCompatibility:
             adapter = get_adapter()
             assert isinstance(adapter, PostgreSQLAdapter)
 
-            test_dml = "INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"
+            test_dml = (
+                "INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"
+            )
             app_id = "app123"
             uid = "user456"
 

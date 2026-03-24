@@ -2,12 +2,12 @@
 Database operator API endpoints
 for common databases.
 """
-from loguru import logger
 
 from typing import Any, List, Optional, Tuple
 
 import sqlalchemy
 import sqlalchemy.exc
+from loguru import logger
 from memory.database.domain.entity.database_meta import (
     get_id_by_did,
     get_id_by_did_uid,
@@ -107,7 +107,9 @@ async def check_space_id_and_get_uid(
         span_context.add_error_event(
             f"space_id: {space_id} does not contain database_id: {database_id}"
         )
-        logger.error(f"space_id: {space_id} does not contain database_id: {database_id}")
+        logger.error(
+            f"space_id: {space_id} does not contain database_id: {database_id}"
+        )
         return None, format_response(
             code=CodeEnum.SpaceIDNotExistError.code,
             message=f"space_id: {space_id} does not contain database_id: {database_id}",
