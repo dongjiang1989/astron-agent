@@ -8,10 +8,18 @@ with Gemini models.
 import json
 from typing import Any, AsyncIterator, Dict, List, Tuple
 
-import google.generativeai as genai
-from google.generativeai import GenerativeModel
-from google.generativeai.types import AsyncGenerateContentResponse
-from google.generativeai.types.content_types import Part, Content
+# Import Google GenAI SDK with support for both deprecated and new package names
+try:
+    import google.genai as genai
+    from google.genai import GenerativeModel
+    from google.genai.types import AsyncGenerateContentResponse
+    from google.genai.types.content_types import Part, Content
+except ImportError:
+    # Fallback to deprecated package during transition period
+    import google.generativeai as genai
+    from google.generativeai import GenerativeModel
+    from google.generativeai.types import AsyncGenerateContentResponse
+    from google.generativeai.types.content_types import Part, Content
 
 from workflow.consts.engine.chat_status import ChatStatus
 from workflow.engine.nodes.entities.llm_response import LLMResponse
