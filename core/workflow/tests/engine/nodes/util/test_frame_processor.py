@@ -82,12 +82,6 @@ def test_frame_processor_factory_supports_google() -> None:
     assert isinstance(processor, GoogleFrameProcessor)
 
 
-def test_frame_processor_factory_supports_deepseek() -> None:
-    processor = FrameProcessorFactory.get_processor(ModelProviderEnum.DEEPSEEK.value)
-
-    assert isinstance(processor, OpenAIFrameProcessor)
-
-
 def test_frame_processor_factory_rejects_unknown_protocol() -> None:
     with pytest.raises(ValueError, match="Unsupported protocol"):
         FrameProcessorFactory.get_processor("unknown-provider")

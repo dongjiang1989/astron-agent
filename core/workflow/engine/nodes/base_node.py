@@ -1299,7 +1299,6 @@ class BaseLLMNode(BaseNode):
                 if (
                     self.source in {
                         ModelProviderEnum.OPENAI.value,
-                        ModelProviderEnum.DEEPSEEK.value,
                         ModelProviderEnum.ANTHROPIC.value,
                         ModelProviderEnum.GOOGLE.value,
                     }

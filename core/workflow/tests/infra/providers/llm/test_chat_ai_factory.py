@@ -72,8 +72,8 @@ def test_chat_ai_factory_supports_google() -> None:
     assert isinstance(chat_ai, GoogleChatAI)
 
 
-def test_chat_ai_factory_supports_deepseek() -> None:
-    chat_ai = build_chat_ai(ModelProviderEnum.DEEPSEEK.value)
+def test_chat_ai_factory_supports_openai() -> None:
+    chat_ai = build_chat_ai(ModelProviderEnum.OPENAI.value)
 
     assert isinstance(chat_ai, FakeOpenAIChatAI)
 

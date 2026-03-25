@@ -527,7 +527,6 @@ class RetryableErrorHandler(ExceptionHandlerBase):
                 }
             elif model_source in {
                 ModelProviderEnum.OPENAI.value,
-                ModelProviderEnum.DEEPSEEK.value,
                 ModelProviderEnum.ANTHROPIC.value,
                 ModelProviderEnum.GOOGLE.value,
             }:
@@ -1559,7 +1558,6 @@ class WorkflowEngine(BaseModel):
                         }
                     case (
                         ModelProviderEnum.OPENAI.value
-                        | ModelProviderEnum.DEEPSEEK.value
                         | ModelProviderEnum.ANTHROPIC.value
                         | ModelProviderEnum.GOOGLE.value
                     ):
