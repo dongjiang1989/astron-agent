@@ -503,7 +503,8 @@ const paste = async (
       });
     }, 500);
   } catch (error) {
-    message.error('[Clipboard] 复制失败', error);
+    console.error('[Clipboard] 复制失败', error);
+    message.error('[Clipboard] 复制失败');
     return;
   }
 };
