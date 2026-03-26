@@ -181,6 +181,7 @@ const buildSubmitParams = (
       precision: item?.precision,
     })),
     isThink: modelInfo?.isThink ?? false,
+    multiMode: modelInfo?.multiMode ?? false,
   };
 };
 
@@ -322,6 +323,7 @@ const handleLocalModelSubmit = (params: {
     color: botColor,
     acceleratorCount,
     modelPath: selectedLocalModel,
+    multiMode: modelInfo?.multiMode ?? false,
     config: modelParams?.map(item => ({
       id: item?.id,
       constraintType: item?.fieldType === 'boolean' ? 'switch' : 'range',
