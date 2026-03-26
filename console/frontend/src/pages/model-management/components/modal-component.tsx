@@ -1356,6 +1356,7 @@ const updateBasicInfo = (
     domain: data?.domain || '',
     provider: normalizeModelProvider(data?.provider),
     isThink: data?.isThink ?? false,
+    multiMode: data?.multiMode ?? false,
   });
   formState.beforeModelKeys.current = data?.apiKey || '';
   avatarState.setBotIcon({ name: data?.address || '', value: data?.icon });

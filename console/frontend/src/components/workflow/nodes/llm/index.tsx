@@ -131,19 +131,13 @@ const MultimediaSection = ({
   const { inputs, handleChangeInputParam, handleAddInputLine, allowAddInput } = useNodeCommon({ id, data });
   const canvasesDisabled = useFlowsManager(state => state.canvasesDisabled);
 
-  // Filter to get multimedia inputs
-  const multimediaInputs = inputs.filter(input =>
-    input?.customParameterType === 'image_understanding' ||
-    input?.customParameterType === 'multimodal_input'
-  );
+  // Check if any selected model has multimodal capability
+  const models = data?.nodeParam?.model || [];
+  const hasMultimodalCapability = models.some(model => model?.checked && model?.multiMode === true);
 
-  // Find or create the multimedia input
-  let multimediaInput = multimediaInputs.length > 0 ? multimediaInputs[0] : null;
-  if (!multimediaInput && inputs.length > 0) {
-    // Check if we need to create a multimedia input
-    multimediaInput = inputs.find(input =>
-      input?.name === 'multimedia' || input?.name?.toLowerCase().includes('media')
-    );
+  // Only render if the model has multimodal capability
+  if (!hasMultimodalCapability) {
+    return null;
   }
 
   return (
@@ -158,23 +152,45 @@ const MultimediaSection = ({
       content={
         <div className="rounded-md px-[18px] pb-3 pointer-events-auto">
           <div className="flex flex-col gap-1">
-            {/* Render multimedia input field */}
-            {multimediaInput ? (
-              <div key={multimediaInput.id} className="flex flex-col gap-1">
+            {/* Add multimedia input button */}
+            {!canvasesDisabled && allowAddInput && (
+              <button
+                className="text-[#6356EA] text-xs font-medium mt-2 inline-flex items-center cursor-pointer gap-1.5"
+                onClick={() => handleAddInputLine()}
+              >
+                <span>+ {t('workflow.nodes.largeModelNode.addMultimediaInput')}</span>
+              </button>
+            )}
+
+            {/* Render all inputs as multimedia inputs */}
+            {inputs.map(input => (
+              <div key={input.id} className="flex flex-col gap-1">
                 <div className="flex items-start gap-3 overflow-hidden">
                   <div className="flex flex-col flex-shrink-0 w-1/3">
-                    <span>{multimediaInput.name}</span>
+                    <input
+                      className="border rounded p-1 w-full"
+                      value={input?.name || ''}
+                      onChange={(e) =>
+                        handleChangeInputParam(
+                          input.id,
+                          (data, val) => (data.name = val),
+                          e.target.value
+                        )
+                      }
+                      placeholder={t('workflow.nodes.largeModelNode.multimediaNamePlaceholder')}
+                      disabled={canvasesDisabled}
+                    />
                   </div>
                   <div className="flex flex-col flex-shrink-0 w-1/4">
                     {canvasesDisabled ? (
-                      <span>{multimediaInput?.schema?.value?.type === 'literal' ? t('workflow.nodes.common.input') : t('workflow.nodes.common.reference')}</span>
+                      <span>{input?.schema?.value?.type === 'literal' ? t('workflow.nodes.common.input') : t('workflow.nodes.common.reference')}</span>
                     ) : (
                       <select
-                        className="border rounded p-1"
-                        value={multimediaInput?.schema?.value?.type || 'literal'}
+                        className="border rounded p-1 w-full"
+                        value={input?.schema?.value?.type || 'literal'}
                         onChange={(e) =>
                           handleChangeInputParam(
-                            multimediaInput.id,
+                            input.id,
                             (data, val) => {
                               data.schema.value.type = val;
                               if (val === 'literal') {
@@ -193,81 +209,48 @@ const MultimediaSection = ({
                     )}
                   </div>
                   <div className="flex flex-col flex-1 overflow-hidden">
-                    {multimediaInput?.schema?.value?.type === 'literal' ? (
+                    {input?.schema?.value?.type === 'literal' ? (
                       <input
                         className="border rounded p-1 w-full"
-                        value={multimediaInput?.schema?.value?.content || ''}
+                        value={input?.schema?.value?.content || ''}
                         onChange={(e) =>
                           handleChangeInputParam(
-                            multimediaInput.id,
+                            input.id,
                             (data, val) => (data.schema.value.content = val),
                             e.target.value
                           )
                         }
                         placeholder={t('workflow.nodes.largeModelNode.multimediaInputPlaceholder')}
+                        disabled={canvasesDisabled}
                       />
                     ) : (
                       <div>
-                        {/* For reference type, we can add a cascader later */}
                         <input
                           className="border rounded p-1 w-full"
-                          value={typeof multimediaInput?.schema?.value?.content === 'object'
-                            ? JSON.stringify(multimediaInput?.schema?.value?.content)
-                            : multimediaInput?.schema?.value?.content || ''}
+                          value={typeof input?.schema?.value?.content === 'object'
+                            ? JSON.stringify(input?.schema?.value?.content)
+                            : input?.schema?.value?.content || ''}
                           onChange={(e) =>
                             handleChangeInputParam(
-                              multimediaInput.id,
+                              input.id,
                               (data, val) => (data.schema.value.content = val),
                               e.target.value
                             )
                           }
                           placeholder={t('workflow.nodes.largeModelNode.multimediaRefPlaceholder')}
+                          disabled={canvasesDisabled}
                         />
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            ) : (
+            ))}
+
+            {inputs.length === 0 && (
               <div className="text-sm text-gray-500 italic">
                 {t('workflow.nodes.largeModelNode.noMultimediaInput')}
               </div>
-            )}
-
-            {!canvasesDisabled && !multimediaInput && allowAddInput && (
-              <button
-                className="text-[#6356EA] text-xs font-medium mt-2 inline-flex items-center cursor-pointer gap-1.5"
-                onClick={() => {
-                  // Add a multimedia input
-                  handleAddInputLine();
-                  // Find the last input (newly added) and set its properties
-                  setTimeout(() => {
-                    const currentInputs = inputs;
-                    if (currentInputs.length > 0) {
-                      const lastInput = currentInputs[currentInputs.length - 1];
-                      handleChangeInputParam(
-                        lastInput.id,
-                        (data) => {
-                          data.name = 'multimedia';
-                          data.customParameterType = 'multimodal_input';
-                          data.schema = {
-                            ...data.schema,
-                            type: 'string',
-                            value: {
-                              ...data.schema?.value,
-                              type: 'literal',
-                              content: '',
-                            }
-                          };
-                        },
-                        undefined
-                      );
-                    }
-                  }, 100);
-                }}
-              >
-                <span>+ {t('workflow.nodes.largeModelNode.addMultimediaInput')}</span>
-              </button>
             )}
           </div>
         </div>
@@ -412,6 +395,10 @@ export const LargeModelDetail = memo(({ id, data }): React.ReactElement => {
     data,
   });
 
+  // Check if any selected model has multimodal capability
+  const models = data?.nodeParam?.model || [];
+  const hasMultimodalCapability = models.some(model => model?.checked && model?.multiMode === true);
+
   return (
     <div className="p-[14px] pb-[6px]">
       <div className="bg-[#fff] rounded-lg w-full flex flex-col gap-2.5">
@@ -422,11 +409,13 @@ export const LargeModelDetail = memo(({ id, data }): React.ReactElement => {
           data={data}
           handleChangeNodeParam={handleChangeNodeParam}
         />
-        <MultimediaSection
-          id={id}
-          data={data}
-          handleChangeNodeParam={handleChangeNodeParam}
-        />
+        {hasMultimodalCapability && (
+          <MultimediaSection
+            id={id}
+            data={data}
+            handleChangeNodeParam={handleChangeNodeParam}
+          />
+        )}
         <OutputSection
           id={id}
           data={data}

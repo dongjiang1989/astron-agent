@@ -32,6 +32,7 @@ const translation = {
       multimedia: '多媒体',
       multimediaInputPlaceholder: '输入多媒体内容或从引用中选择',
       multimediaRefPlaceholder: '从其他节点选择多媒体内容',
+      multimediaNamePlaceholder: '参数名称',
       noMultimediaInput: '未配置多媒体输入',
       addMultimediaInput: '添加多媒体输入',
     },

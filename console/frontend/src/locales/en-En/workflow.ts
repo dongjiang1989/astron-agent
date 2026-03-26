@@ -32,6 +32,7 @@ const translation = {
       multimedia: 'Multimedia',
       multimediaInputPlaceholder: 'Enter multimedia content or select from reference',
       multimediaRefPlaceholder: 'Select multimedia content from other nodes',
+      multimediaNamePlaceholder: 'Parameter name',
       noMultimediaInput: 'No multimedia input configured',
       addMultimediaInput: 'Add multimedia input',
     },
