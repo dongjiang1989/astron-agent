@@ -43,15 +43,13 @@ def upgrade() -> None:
             "create_at",
             sa.DateTime(),
             nullable=True,
-            server_default=sa.text("CURRENT_TIMESTAMP(6)"),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
         sa.Column(
             "update_at",
             sa.DateTime(),
             nullable=False,
-            server_default=sa.text(
-                "CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)"
-            ),
+            server_default=sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
         ),
         sa.Column(
             "mcp_server_url",

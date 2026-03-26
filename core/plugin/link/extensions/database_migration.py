@@ -12,7 +12,8 @@ from plugin.link.alembic.default_tools import DEFAULT_TOOL_INSERT_STATEMENTS
 from plugin.link.consts import const
 from plugin.link.domain.models.manager import get_db_engine, get_redis_engine
 from plugin.link.domain.models.utils import RedisService
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import inspect
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from alembic import command  # type: ignore[attr-defined]
 from alembic.config import Config
@@ -145,14 +146,24 @@ def seed_default_tools() -> None:
         logging.warning("Skip link default tool seed because database is not initialized")
         return
 
+    inspector = inspect(db_service.engine)
+    if "tools_schema" not in inspector.get_table_names():
+        logging.warning(
+            "Skip link default tool seed because tools_schema does not exist yet"
+        )
+        return
+
     statements = _build_seed_statements()
     if not statements:
         logging.warning("Skip link default tool seed because no statements were found")
         return
 
-    with db_service.engine.begin() as connection:
-        for statement in statements:
-            connection.exec_driver_sql(statement)
+    try:
+        with db_service.engine.begin() as connection:
+            for statement in statements:
+                connection.exec_driver_sql(statement)
+    except ProgrammingError as error:
+        logging.error("Failed to seed link default tools: %s", error)
 
 
 def run_database_migration() -> None:
