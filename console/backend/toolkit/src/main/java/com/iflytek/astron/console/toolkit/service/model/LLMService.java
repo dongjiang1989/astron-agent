@@ -256,6 +256,9 @@ public class LLMService {
             llmInfoVo.setLlmSource(0);
             llmInfoVo.setDomain(model.getDomain());
             llmInfoVo.setProvider(resolveProvider(model));
+            // Copy the isThink and multiMode properties from the model
+            llmInfoVo.setIsThink(model.getIsThink());
+            llmInfoVo.setMultiMode(model.getMultiMode());
             JSONArray config = JSONArray.parseArray(model.getConfig());
             for (Object o : config) {
                 JSONObject obj = (JSONObject) o;
