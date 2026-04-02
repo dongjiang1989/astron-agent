@@ -189,10 +189,22 @@ public class ChatBotDataServiceImpl implements ChatBotDataService {
 
     @Override
     public boolean deleteBot(Integer botId, String uid) {
-        return deleteChatBotBase(botId, uid) &&
-                deleteChatBotList(botId, uid) &&
-                deleteChatList(botId, uid) &&
-                deleteChatBotMarket(botId, uid);
+        boolean baseDeleted = deleteChatBotBase(botId, uid);
+        boolean botListDeleted = deleteChatBotList(botId, uid);
+        boolean chatListDeleted = deleteChatList(botId, uid);
+        boolean marketDeleted = deleteChatBotMarket(botId, uid);
+
+        if (!botListDeleted) {
+            log.info("No active chat_bot_list rows updated during bot deletion, botId={}, uid={}", botId, uid);
+        }
+        if (!chatListDeleted) {
+            log.info("No active chat_list rows updated during bot deletion, botId={}, uid={}", botId, uid);
+        }
+        if (!marketDeleted) {
+            log.info("No chat_bot_market rows updated during bot deletion, botId={}, uid={}", botId, uid);
+        }
+
+        return baseDeleted;
     }
 
     private boolean deleteChatBotBase(Integer botId, String uid) {

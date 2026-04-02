@@ -309,6 +309,22 @@ class ChatBotDataServiceImplTest {
     }
 
     @Test
+    void testDeleteBot_WithBotIdAndUid_ShouldStillDeleteMarketWhenIntermediateUpdatesMiss() {
+        when(chatBotBaseMapper.update(isNull(), any(LambdaUpdateWrapper.class))).thenReturn(1);
+        when(chatBotListMapper.update(isNull(), any(LambdaUpdateWrapper.class))).thenReturn(0);
+        when(chatListMapper.update(isNull(), any(LambdaUpdateWrapper.class))).thenReturn(0);
+        when(chatBotMarketMapper.update(isNull(), any(LambdaUpdateWrapper.class))).thenReturn(1);
+
+        boolean result = chatBotDataService.deleteBot(TEST_BOT_ID, TEST_UID);
+
+        assertTrue(result);
+        verify(chatBotBaseMapper).update(isNull(), any(LambdaUpdateWrapper.class));
+        verify(chatBotListMapper).update(isNull(), any(LambdaUpdateWrapper.class));
+        verify(chatListMapper).update(isNull(), any(LambdaUpdateWrapper.class));
+        verify(chatBotMarketMapper).update(isNull(), any(LambdaUpdateWrapper.class));
+    }
+
+    @Test
     void testDeleteBot_WithBotIdAndSpaceId_Success() {
         when(chatBotBaseMapper.update(any(ChatBotBase.class), any(LambdaQueryWrapper.class))).thenReturn(1);
 
