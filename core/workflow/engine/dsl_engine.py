@@ -930,13 +930,14 @@ class WorkflowEngine(BaseModel):
             # Node start callback
             await self._handle_node_start_callback(node)
 
-            # Execute node
-            run_result, fail_branch = await self._execute_node_with_retry(
-                node, span_context
-            )
-
-            # Mark node as complete
-            self.engine_ctx.node_run_status[node.node_id].complete.set()
+            try:
+                # Execute node
+                run_result, fail_branch = await self._execute_node_with_retry(
+                    node, span_context
+                )
+            finally:
+                # Message/end nodes may be waiting on this event even when execution fails.
+                self.engine_ctx.node_run_status[node.node_id].complete.set()
 
         # Get next batch of active nodes
         next_active_nodes, next_inactive_nodes = await self._get_next_nodes(
@@ -1426,17 +1427,52 @@ class WorkflowEngine(BaseModel):
         if not self.engine_ctx.dfs_tasks:
             return
 
-        done, pending = await asyncio.wait(
-            self.engine_ctx.dfs_tasks, return_when=asyncio.FIRST_EXCEPTION
-        )
-
-        # Cancel all pending tasks and ensure they are awaited
-        await self._cancel_pending_task(pending)
-
         exceptions: List[Exception] = []
+        handled_tasks: Set[Task] = set()
 
-        # Check if completed tasks have exceptions
-        for task in done:
+        await self._process_dfs_tasks(exceptions, handled_tasks)
+        self._validate_responses(exceptions)
+        self._raise_exceptions_if_any(exceptions, span)
+
+    async def _process_dfs_tasks(
+        self, exceptions: List[Exception], handled_tasks: Set[Task]
+    ) -> None:
+        """
+        Process all DFS tasks until completion or first exception.
+        """
+        while True:
+            current_tasks = {
+                task for task in self.engine_ctx.dfs_tasks if task not in handled_tasks
+            }
+            if not current_tasks:
+                break
+
+            done, pending = await asyncio.wait(
+                current_tasks, return_when=asyncio.FIRST_EXCEPTION
+            )
+
+            handled_tasks.update(done)
+            await self._cancel_pending_task(pending)
+            handled_tasks.update(pending)
+
+            await self._collect_task_results(done, exceptions)
+
+            if exceptions:
+                await self._cleanup_remaining_tasks(handled_tasks)
+                handled_tasks.update(
+                    task
+                    for task in self.engine_ctx.dfs_tasks
+                    if task not in handled_tasks and not task.done()
+                )
+                break
+
+    async def _collect_task_results(
+        self, done_tasks: Set[Task], exceptions: List[Exception]
+    ) -> None:
+        """
+        Collect results from completed tasks and handle end nodes.
+        """
+        for task in done_tasks:
             try:
                 if task.cancelled():
                     continue
@@ -1445,6 +1481,21 @@ class WorkflowEngine(BaseModel):
             except Exception as e:
                 exceptions.append(e)
 
+    async def _cleanup_remaining_tasks(self, handled_tasks: Set[Task]) -> None:
+        """
+        Cancel and await all remaining unhandled tasks.
+        """
+        remaining_tasks = {
+            task
+            for task in self.engine_ctx.dfs_tasks
+            if task not in handled_tasks and not task.done()
+        }
+        await self._cancel_pending_task(remaining_tasks)
+
+    def _validate_responses(self, exceptions: List[Exception]) -> None:
+        """
+        Validate that at least one response was collected.
+        """
         if not self.engine_ctx.responses:
             exceptions.append(
                 CustomException(
@@ -1452,11 +1503,14 @@ class WorkflowEngine(BaseModel):
                 )
             )
 
+    def _raise_exceptions_if_any(self, exceptions: List[Exception], span: Span) -> None:
+        """
+        Record and raise the first exception if any occurred.
+        """
         if exceptions:
             for exception in exceptions:
                 span.record_exception(exception)
             raise exceptions[0]
-        return None
 
     def _validate_start_node(self) -> None:
         """
@@ -1628,6 +1682,23 @@ class WorkflowEngine(BaseModel):
             node = self.engine_ctx.built_nodes[msg_node_id]
             strategy = self.strategy_manager.get_strategy(node.node_id.split("::")[0])
             return await strategy.execute_node(node, self.engine_ctx, span_context)
+        except asyncio.CancelledError:
+            node = self.engine_ctx.built_nodes[msg_node_id]
+            result = NodeRunResult(
+                node_id=node.node_id,
+                alias_name=node.node_alias_name,
+                node_type=node.node_id.split("::")[0],
+                status=WorkflowNodeExecutionStatus.CANCELLED,
+                inputs={},
+                outputs={},
+                node_answer_content="",
+            )
+            await self.engine_ctx.callback.on_node_end(
+                node_id=node.node_id,
+                alias_name=node.node_alias_name,
+                message=result,
+            )
+            return result
         finally:
             self.engine_ctx.node_run_status[msg_node_id].complete.set()
 
@@ -1835,6 +1906,25 @@ class WorkflowEngineFactory:
             )
 
             return builder.build()
+
+    @staticmethod
+    def create_iteration_engine(
+        sparkflow_dsl: WorkflowDSL,
+        iteration_node_id: str,
+        span: Span,
+        sub_dsl: WorkflowDSL | None = None,
+    ) -> WorkflowEngine:
+        """
+        Create an isolated workflow engine for a single iteration subgraph.
+
+        :param sparkflow_dsl: Full workflow DSL definition
+        :param iteration_node_id: Iteration container node ID
+        :param span: Tracing span for observability
+        :return: WorkflowEngine instance for the iteration subgraph
+        """
+        if sub_dsl is None:
+            sub_dsl = sparkflow_dsl.extract_iteration_sub_dsl(iteration_node_id)
+        return WorkflowEngineFactory.create_engine(sub_dsl, span)
 
     @staticmethod
     def create_debug_node(
@@ -2097,6 +2187,8 @@ class WorkflowEngineBuilder:
 
         if node_type == NodeType.START.value:
             self.start_node_id = node.id
+        elif node_type == NodeType.ITERATION_START.value and not self.start_node_id:
+            self.start_node_id = node.id
         elif node_type == NodeType.DECISION_MAKING.value:
             self._handle_decision_making_node(node.id, node)
         elif node_type == NodeType.LLM.value:
@@ -2227,6 +2319,7 @@ class WorkflowEngineBuilder:
 
             inputs = node.data.inputs
             for input_item in inputs:
+                ref_node_id = None
                 var_type = input_item.input_schema.value.type
                 if var_type == ValueType.LITERAL.value:
                     continue
@@ -2234,10 +2327,12 @@ class WorkflowEngineBuilder:
                 content = input_item.input_schema.value.content
                 if isinstance(content, NodeRef):
                     ref_node_id = content.nodeId
-
-                if ref_node_id:
+                if (
+                    ref_node_id
+                    and ref_node_id != node.id
+                    and node.id in self.msg_or_end_node_deps
+                ):
                     self.msg_or_end_node_deps[node.id].data_dep.add(ref_node_id)
-
                     # Check if normal path exists
                     if self._has_normal_path(ref_node_id, node.id):
                         self.msg_or_end_node_deps[node.id].data_dep_path_info[
