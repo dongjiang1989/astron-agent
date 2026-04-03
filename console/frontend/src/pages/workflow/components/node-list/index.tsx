@@ -5,6 +5,11 @@ import useFlowsManager from '@/components/workflow/store/use-flows-manager';
 import { useFlowCommon } from '@/components/workflow/hooks/use-flow-common';
 import NodeDetail from '@/components/workflow/modal/node-detail';
 import { generateRandomPosition } from '@/components/workflow/utils/reactflowUtils';
+import {
+  AddNodeType,
+  NewNodeType,
+  PositionType,
+} from '@/components/workflow/types/drawer/chat-debugger';
 
 import nodeListAdd from '@/assets/imgs/workflow/node-list-add.png';
 import nodelistCloseIcon from '@/assets/imgs/workflow/nodelist-close-icon.png';
@@ -28,13 +33,21 @@ interface NodeCategory {
 
 interface NodeListProps {
   noIterator?: boolean;
+  hiddenAliasNames?: string[];
+  handleAddNode?: (
+    addNode: AddNodeType,
+    position: PositionType
+  ) => NewNodeType[] | null | void;
 }
 
 // ========= 组件 =========
 const NodeList: React.FC<NodeListProps> = ({
   noIterator = false,
+  hiddenAliasNames = [],
+  handleAddNode: handleAddNodeProp,
 }): React.ReactElement => {
-  const { handleAddNode } = useFlowCommon();
+  const { handleAddNode: handleAddNodeFromHook } = useFlowCommon();
+  const handleAddNode = handleAddNodeProp ?? handleAddNodeFromHook;
   const { t } = useTranslation();
   const getCurrentStore = useFlowsManager(state => state.getCurrentStore);
   const currentStore = getCurrentStore();
@@ -95,7 +108,8 @@ const NodeList: React.FC<NodeListProps> = ({
                         <p className="text-[#6A7385]">{nodeCategory.name}</p>
                         <div className="flex flex-col gap-3.5">
                           {nodeCategory.nodes.map((item, idx) =>
-                            !noIterator || item?.idType !== 'iteration' ? (
+                            (!noIterator || item?.idType !== 'iteration') &&
+                            !hiddenAliasNames?.includes(item?.aliasName) ? (
                               <Tooltip
                                 key={idx}
                                 overlayClassName="white-tooltip"
@@ -150,7 +164,7 @@ const NodeList: React.FC<NodeListProps> = ({
                                       onClick={() => {
                                         setWillAddNode(item);
                                         handleAddNode(
-                                          item,
+                                          item as unknown as AddNodeType,
                                           generateRandomPosition(
                                             reactFlowInstance?.getViewport()
                                           )

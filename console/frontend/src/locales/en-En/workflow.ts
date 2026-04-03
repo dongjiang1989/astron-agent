@@ -347,6 +347,21 @@ const translation = {
       input: 'Input',
       output: 'Output',
       iterationSubNodes: 'Iteration Sub Nodes',
+      runConfigTitle: 'Execution Mode',
+      runModeLabel: 'Execution Mode',
+      serialMode: 'Serial Mode',
+      parallelMode: 'Parallel Mode',
+      errorHandlingLabel: 'Error Handling Strategy',
+      errorHandlingOptions: {
+        failFast: 'Fail fast (stop on error)',
+        continue: 'Continue on error',
+        ignoreErrorOutput: 'Ignore error output',
+      },
+      maxConcurrencyLabel: 'Max Concurrency',
+      parallelModeNoQaInSubCanvas:
+        'Question-answer nodes cannot be added to the iterator sub-canvas in parallel mode',
+      cannotSwitchToParallelWithQa:
+        'Cannot switch to parallel mode while a question-answer node exists in the sub-canvas',
     },
     codeNode: {
       type: 'Code',

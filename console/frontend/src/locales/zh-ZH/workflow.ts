@@ -337,6 +337,21 @@ const translation = {
       input: '输入',
       output: '输出',
       iterationSubNodes: '迭代子节点',
+      runConfigTitle: '运行模式',
+      runModeLabel: '运行模式',
+      serialMode: '串行模式',
+      parallelMode: '并行模式',
+      errorHandlingLabel: '错误响应方法',
+      errorHandlingOptions: {
+        failFast: '错误时终止',
+        continue: '忽略错误并继续',
+        ignoreErrorOutput: '移除错误输出',
+      },
+      maxConcurrencyLabel: '最大并行度',
+      parallelModeNoQaInSubCanvas:
+        '并行模式下不支持在迭代子画布中添加问答节点',
+      cannotSwitchToParallelWithQa:
+        '子画布中存在问答节点，无法切换到并行模式',
     },
     codeNode: {
       type: '代码',
