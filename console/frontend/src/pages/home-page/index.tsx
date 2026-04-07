@@ -7,7 +7,6 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
 import { getCommonConfig } from '@/services/common';
 import {
   getAgentType,
@@ -110,10 +109,11 @@ const HomePage: React.FC = () => {
 
   const formatCreateTime = useCallback((value?: string) => {
     if (!value) return '';
-    const parsed = dayjs(value);
-    return parsed.isValid()
-      ? parsed.format('YYYY-MM-DD HH:mm')
-      : value.replace('T', ' ').slice(0, 16);
+    return value
+      .replace('T', ' ')
+      .replace(/(\.\d+)?Z$/, '')
+      .replace(/[+-]\d{2}:\d{2}$/, '')
+      .slice(0, 16);
   }, []);
 
   // filter banner by language

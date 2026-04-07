@@ -30,6 +30,7 @@ import weixinghaoImg from '@/assets/imgs/release/weixin-release.svg';
 import apiImg from '@/assets/imgs/release/api-release.svg';
 import agentHubIcon from '@/assets/imgs/workflow/agent-hub-icon.svg';
 import mcpImg from '@/assets/imgs/release/mcp-release.svg';
+import closeIcon from '@/assets/imgs/bot-center/new-close-icon.svg';
 import formSelect from '@/assets/imgs/main/icon_nav_dropdown.svg';
 import { useTranslation } from 'react-i18next';
 
@@ -139,10 +140,15 @@ const AgentList: React.FC<AgentListProps> = ({ AgentType }) => {
   ): void => {
     Modal.confirm({
       wrapClassName: 'bot-center-confirm-modal set_bot-center-confirm-modal',
-      title: t('releaseManagement.applyTakeDownAgent'),
+      title: (
+        <div className={styles.confirmModalTitle}>
+          <ExclamationCircleOutlined className={styles.confirmModalTitleIcon} />
+          <span>{t('releaseManagement.applyTakeDownAgent')}</span>
+        </div>
+      ),
       closable: true,
       maskClosable: true,
-      closeIcon: <span className="close-icon" />,
+      closeIcon: <img src={closeIcon} alt="close" className={styles.closeIcon} />,
       okType: 'primary',
       width: '461px',
       content: (

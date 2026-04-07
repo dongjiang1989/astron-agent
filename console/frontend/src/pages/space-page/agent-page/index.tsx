@@ -1,7 +1,6 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, message, Popover, Select, Tooltip } from 'antd';
-import dayjs from 'dayjs';
 import { throttle } from 'lodash';
 import { enableBotFavorite } from '@/services/agent'; // NOTE: 需更换接口
 import { useTranslation } from 'react-i18next';
@@ -40,6 +39,8 @@ import VirtualConfig from '@/components/virtual-config-modal';
 import { upgradeWorkflow } from '@/services/spark-common';
 
 function index() {
+  const creatorLabel = '\u521b\u5efa\u4eba\uff1a';
+  const createdAtLabel = '\u521b\u5efa\u65f6\u95f4\uff1a';
   const [showbotNo, setShowbotNo] = useState(false);
   const typePublished = [1, 2, 4]; // 已发布状态
   const typeUnblished = [];
@@ -79,10 +80,11 @@ function index() {
 
   const formatCreateTime = useCallback((value?: string) => {
     if (!value) return '-';
-    const parsed = dayjs(value);
-    return parsed.isValid()
-      ? parsed.format('YYYY-MM-DD HH:mm')
-      : value.replace('T', ' ').slice(0, 16);
+    return value
+      .replace('T', ' ')
+      .replace(/(\.\d+)?Z$/, '')
+      .replace(/[+-]\d{2}:\d{2}$/, '')
+      .slice(0, 16);
   }, []);
 
   // 复制成虚拟人需要的参数
@@ -435,18 +437,39 @@ function index() {
                             alt=""
                           />
                         </span>
-                        <div className="flex flex-col gap-2 overflow-hidden">
+                        <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-hidden">
                           <div
                             className="flex-1 text-overflow font-medium text-xl title-color title-size"
                             title={k.botName}
                           >
                             {k.botName}
                           </div>
-                          <div
-                            className="text-[#7F7F7F] text-[14px] overflow-hidden text-ellipsis h-[43px] w-full line-clamp-2"
-                            title={k.botDesc}
-                          >
-                            {k.botDesc}
+                          <div className="flex items-start justify-between gap-4">
+                            <div
+                              className="text-[#7F7F7F] text-[14px] overflow-hidden text-ellipsis h-[43px] flex-1 line-clamp-2"
+                              title={k.botDesc}
+                            >
+                              {k.botDesc}
+                            </div>
+                            <div
+                              className="shrink-0 min-w-[132px] text-[12px] leading-[18px] text-[#8C90A0]"
+                              style={{ marginTop: '2px' }}
+                            >
+                              <div
+                                className="truncate"
+                                title={`${creatorLabel}${getCreatorLabel(k)}`}
+                              >
+                                {creatorLabel}
+                                {getCreatorLabel(k)}
+                              </div>
+                              <div
+                                className="truncate"
+                                title={`${createdAtLabel}${formatCreateTime(k?.createTime)}`}
+                              >
+                                {createdAtLabel}
+                                {formatCreateTime(k?.createTime)}
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <Tooltip
@@ -494,7 +517,7 @@ function index() {
                     </div>
 
                     <div
-                      className="flex justify-between items-center "
+                      className="flex justify-between items-center gap-3"
                       style={{
                         padding: '0px 24px 0 24px',
                         scrollbarWidth: 'none',
@@ -513,24 +536,7 @@ function index() {
                           </div>
                         </div>
                       </span>
-                      <div
-                        className="flex-1 min-w-0 px-3"
-                        style={{ color: '#7F7F7F', fontSize: '12px' }}
-                      >
-                        <div
-                          className="truncate"
-                          title={`创建人：${getCreatorLabel(k)}`}
-                        >
-                          创建人：{getCreatorLabel(k)}
-                        </div>
-                        <div
-                          className="truncate"
-                          title={`创建时间：${formatCreateTime(k?.createTime)}`}
-                        >
-                          创建时间：{formatCreateTime(k?.createTime)}
-                        </div>
-                      </div>
-                      <div className="flex items-center text-desc flex-1 max-w-[200px] justify-between">
+                      <div className="flex items-center text-desc flex-1 justify-end gap-2">
                         <div
                           className="card-chat cursor-pointer flex justify-center items-center"
                           style={{
@@ -695,7 +701,7 @@ function index() {
                                     e.stopPropagation();
                                     if (k?.uid && user?.uid && k.uid !== user.uid) {
                                       message.warning(
-                                        '无法删除他人创建的智能体'
+                                        '\u65e0\u6cd5\u5220\u9664\u4ed6\u4eba\u521b\u5efa\u7684\u667a\u80fd\u4f53'
                                       );
                                       setOperationId(null);
                                       return;

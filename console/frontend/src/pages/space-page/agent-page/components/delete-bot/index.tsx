@@ -35,7 +35,9 @@ function index({
 
   async function handleOk(): Promise<void> {
     if (type && botDetail?.uid && user?.uid && botDetail.uid !== user.uid) {
-      message.warning('无法删除他人创建的智能体');
+      message.warning(
+        '\u65e0\u6cd5\u5220\u9664\u4ed6\u4eba\u521b\u5efa\u7684\u667a\u80fd\u4f53'
+      );
       setDeleteModal(false);
       return;
     }
