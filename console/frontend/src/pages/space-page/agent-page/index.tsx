@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, message, Popover, Select, Tooltip } from 'antd';
+import dayjs from 'dayjs';
 import { throttle } from 'lodash';
 import { enableBotFavorite } from '@/services/agent'; // NOTE: 需更换接口
 import { useTranslation } from 'react-i18next';
@@ -65,6 +66,24 @@ function index() {
   const [operationId, setOperationId] = useState<string | null>(null);
   const { spaceId } = useSpaceStore();
   const { handleToChat } = useChat();
+
+  const getCreatorLabel = useCallback(
+    (bot: { uid?: string }) => {
+      if (bot?.uid && bot.uid === user?.uid) {
+        return user?.nickname || user?.username || user?.mobile || bot.uid;
+      }
+      return bot?.uid || '-';
+    },
+    [user]
+  );
+
+  const formatCreateTime = useCallback((value?: string) => {
+    if (!value) return '-';
+    const parsed = dayjs(value);
+    return parsed.isValid()
+      ? parsed.format('YYYY-MM-DD HH:mm')
+      : value.replace('T', ' ').slice(0, 16);
+  }, []);
 
   // 复制成虚拟人需要的参数
   const [copyParams, setCopyParams] = useState<any>({});
@@ -494,6 +513,23 @@ function index() {
                           </div>
                         </div>
                       </span>
+                      <div
+                        className="flex-1 min-w-0 px-3"
+                        style={{ color: '#7F7F7F', fontSize: '12px' }}
+                      >
+                        <div
+                          className="truncate"
+                          title={`创建人：${getCreatorLabel(k)}`}
+                        >
+                          创建人：{getCreatorLabel(k)}
+                        </div>
+                        <div
+                          className="truncate"
+                          title={`创建时间：${formatCreateTime(k?.createTime)}`}
+                        >
+                          创建时间：{formatCreateTime(k?.createTime)}
+                        </div>
+                      </div>
                       <div className="flex items-center text-desc flex-1 max-w-[200px] justify-between">
                         <div
                           className="card-chat cursor-pointer flex justify-center items-center"
@@ -657,6 +693,13 @@ function index() {
                                   className="p-1 rounded hover:bg-[#F2F5FE] text-[#F74E43]"
                                   onClick={e => {
                                     e.stopPropagation();
+                                    if (k?.uid && user?.uid && k.uid !== user.uid) {
+                                      message.warning(
+                                        '无法删除他人创建的智能体'
+                                      );
+                                      setOperationId(null);
+                                      return;
+                                    }
                                     setBotDetail(k);
                                     setDeleteModal(true);
                                     setOperationId(null);

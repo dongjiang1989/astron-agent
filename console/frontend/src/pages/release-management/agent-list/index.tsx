@@ -137,10 +137,11 @@ const AgentList: React.FC<AgentListProps> = ({ AgentType }) => {
     botId?: number,
     releaseType?: number[] | number
   ): void => {
-    Modal.info({
+    Modal.confirm({
       wrapClassName: 'bot-center-confirm-modal set_bot-center-confirm-modal',
       title: t('releaseManagement.applyTakeDownAgent'),
       closable: true,
+      maskClosable: true,
       closeIcon: <span className="close-icon" />,
       okType: 'primary',
       width: '461px',
@@ -155,30 +156,33 @@ const AgentList: React.FC<AgentListProps> = ({ AgentType }) => {
         </div>
       ),
       okText: t('releaseManagement.submitApplication'),
-      onCancel: (close: () => void) => {
+      cancelText: t('releaseModal.cancel'),
+      onCancel: () => {
         reasonRef.current = undefined;
-        close && close();
       },
-      onOk: (close: () => void) => {
+      onOk: () => {
         if (hasMarketRelease(releaseType) && botId) {
-          handleAgentStatus(botId, {
+          return handleAgentStatus(botId, {
             action: 'OFFLINE',
             publishType: 'MARKET',
             publishData: { reason: t('releaseManagement.maintenanceUpdate') },
           })
             .then(() => {
               reasonRef.current = undefined;
-              close && close();
               message.success(t('releaseManagement.submitApplicationSuccess'));
               setPageInfo(pre => ({ ...pre, pageIndex: 1 }));
               updateBotList({ ...pageInfo, pageIndex: 1 });
             })
             .catch(err => {
               err?.msg && message.error(err.msg);
+              return Promise.reject(err);
             });
         } else {
           if (botInfo?.botId) {
-            cancelBindWx({ appid: botInfo?.wechatAppid, botId: botInfo.botId })
+            return cancelBindWx({
+              appid: botInfo?.wechatAppid,
+              botId: botInfo.botId,
+            })
               .then(res => {
                 getBotInfo({ botId: botInfo.botId }).then(res => {
                   setBotDetailInfo(res.data);
@@ -187,8 +191,10 @@ const AgentList: React.FC<AgentListProps> = ({ AgentType }) => {
               })
               .catch(error => {
                 message.error(error.msg);
+                return Promise.reject(error);
               });
           }
+          return Promise.resolve();
         }
       },
     });

@@ -7,6 +7,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 import { getCommonConfig } from '@/services/common';
 import {
   getAgentType,
@@ -106,6 +107,14 @@ const HomePage: React.FC = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { locale: localeNow } = useLocaleStore();
+
+  const formatCreateTime = useCallback((value?: string) => {
+    if (!value) return '';
+    const parsed = dayjs(value);
+    return parsed.isValid()
+      ? parsed.format('YYYY-MM-DD HH:mm')
+      : value.replace('T', ' ').slice(0, 16);
+  }, []);
 
   // filter banner by language
   const filteredBanners: Banner[] = bannerList
@@ -415,9 +424,22 @@ const HomePage: React.FC = () => {
                               src={require('@/assets/imgs/home/author.svg')}
                               alt=""
                             />
-                            <span>
-                              {item?.creator || t('home.officialAssistant')}
-                            </span>
+                            <div
+                              style={{
+                                minWidth: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                              }}
+                            >
+                              <span>
+                                {item?.creator || t('home.officialAssistant')}
+                              </span>
+                              {item?.createTime ? (
+                                <span title={formatCreateTime(item?.createTime)}>
+                                  {formatCreateTime(item?.createTime)}
+                                </span>
+                              ) : null}
+                            </div>
                           </div>
                           <div className={styles.tags}>
                             {item?.version &&
