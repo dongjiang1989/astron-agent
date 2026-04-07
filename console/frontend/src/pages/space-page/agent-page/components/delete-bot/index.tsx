@@ -5,6 +5,7 @@ import { deleteBotAPI, deleteAgent } from '@/services/agent';
 import dialogDel from '@/assets/imgs/main/icon_dialog_del.png';
 import { handleAgentStatus } from '@/services/release-management';
 import eventBus from '@/utils/event-bus';
+import useUserStore from '@/store/user-store';
 
 type BotDetail = {
   botStatus?: number;
@@ -12,6 +13,7 @@ type BotDetail = {
   id?: string | number;
   name?: string;
   botName?: string;
+  uid?: string;
 };
 
 interface DeleteBotProps {
@@ -29,8 +31,14 @@ function index({
 }: DeleteBotProps): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const user = useUserStore((state: any) => state.user);
 
   async function handleOk(): Promise<void> {
+    if (type && botDetail?.uid && user?.uid && botDetail.uid !== user.uid) {
+      message.warning('无法删除他人创建的智能体');
+      setDeleteModal(false);
+      return;
+    }
     // 从智能体Tab传入Bot的删除 -- 调用星火方面接口
     setLoading(true);
     if (botDetail?.botStatus === 2) {

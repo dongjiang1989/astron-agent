@@ -235,8 +235,13 @@ public class MarketPublishStrategy implements PublishStrategy {
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<ChatBotMarket> updateWrapper =
                 new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
 
-        updateWrapper.eq("bot_id", botId)
-                .eq("uid", uid);
+        updateWrapper.eq("bot_id", botId);
+
+        // In shared space mode, publish records belong to the space bot instead of the current operator.
+        // Re-publish should therefore update the existing market record regardless of who triggers it.
+        if (spaceId == null) {
+            updateWrapper.eq("uid", uid);
+        }
 
         // Sync all data fields from chat_bot_base to ensure data consistency
         updateWrapper.set("bot_name", botBase.getBotName())
