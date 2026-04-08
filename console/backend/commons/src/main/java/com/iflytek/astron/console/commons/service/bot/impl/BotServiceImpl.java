@@ -211,7 +211,7 @@ public class BotServiceImpl implements BotService {
         botBase.setBotName(detail.getBotName() + RandomUtil.randomString(6));
         botBase.setUpdateTime(LocalDateTime.now());
         botBase.setCreateTime(LocalDateTime.now());
-        chatBotBaseMapper.insert(botBase);
+        saveBotAndAddToList(botBase);
         return botBase;
     }
 
@@ -231,7 +231,7 @@ public class BotServiceImpl implements BotService {
         botBase.setBotName(detail.getBotName() + RandomUtil.randomString(6));
         botBase.setUpdateTime(LocalDateTime.now());
         botBase.setCreateTime(LocalDateTime.now());
-        chatBotBaseMapper.insert(botBase);
+        saveBotAndAddToList(botBase);
         return botBase;
     }
 
