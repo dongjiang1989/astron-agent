@@ -287,44 +287,7 @@ public class ModelService extends ServiceImpl<ModelMapper, Model> {
             // 3) Path completion
             String path = Optional.ofNullable(normalized.getPath()).orElse("");
             String cleanedPath = path.replaceAll("/+$", "");
-            String finalPath;
-            String quotedModelDomain = Pattern.quote(Optional.ofNullable(modelDomain).orElse(""));
-            if (PROVIDER_ANTHROPIC.equals(provider)) {
-                if (!cleanedPath.matches(".*/messages/?$")) {
-                    if (cleanedPath.matches(".*/v\\d+$")) {
-                        finalPath = cleanedPath + "/messages";
-                    } else {
-                        finalPath = cleanedPath + "/v1/messages";
-                    }
-                } else {
-                    finalPath = cleanedPath;
-                }
-            } else if (PROVIDER_GOOGLE.equals(provider)) {
-                if (StringUtils.isBlank(modelDomain)) {
-                    throw new BusinessException(ResponseEnum.PARAM_ERROR, "domain cannot be empty");
-                }
-                if (cleanedPath.contains(":generateContent")) {
-                    finalPath = cleanedPath;
-                } else if (cleanedPath.contains(":streamGenerateContent")) {
-                    finalPath = cleanedPath.replace(":streamGenerateContent", ":generateContent");
-                } else if (cleanedPath.matches(".*/v\\d+(beta)?/models/" + quotedModelDomain + "/?$")) {
-                    finalPath = cleanedPath + ":generateContent";
-                } else if (cleanedPath.matches(".*/v\\d+(beta)?/?$")) {
-                    finalPath = cleanedPath + "/models/" + modelDomain + ":generateContent";
-                } else {
-                    finalPath = appendPathSegment(cleanedPath, "/v1beta/models/" + modelDomain + ":generateContent");
-                }
-            } else {
-                if (!cleanedPath.matches(".*/chat/completions/?$")) {
-                    if (cleanedPath.matches(".*/v\\d+$")) {
-                        finalPath = cleanedPath + "/chat/completions";
-                    } else {
-                        finalPath = cleanedPath + "/v1/chat/completions";
-                    }
-                } else {
-                    finalPath = cleanedPath;
-                }
-            }
+            String finalPath = completeApiPath(cleanedPath, provider, modelDomain);
 
             // SECURITY FIX: Validate path to prevent directory traversal
             if (finalPath.contains("..") || finalPath.contains("//")) {
@@ -354,6 +317,54 @@ public class ModelService extends ServiceImpl<ModelMapper, Model> {
             return basePath.substring(0, basePath.length() - 1) + appendPath;
         }
         return basePath + appendPath;
+    }
+
+    private String completeApiPath(String cleanedPath, String provider, String modelDomain) {
+        if (PROVIDER_ANTHROPIC.equals(provider)) {
+            return completeAnthropicPath(cleanedPath);
+        }
+        if (PROVIDER_GOOGLE.equals(provider)) {
+            return completeGooglePath(cleanedPath, modelDomain);
+        }
+        return completeOpenAICompatiblePath(cleanedPath);
+    }
+
+    private String completeAnthropicPath(String cleanedPath) {
+        if (!cleanedPath.matches(".*/messages/?$")) {
+            return cleanedPath.matches(".*/v\\d+$")
+                    ? cleanedPath + "/messages"
+                    : cleanedPath + "/v1/messages";
+        }
+        return cleanedPath;
+    }
+
+    private String completeGooglePath(String cleanedPath, String modelDomain) {
+        if (StringUtils.isBlank(modelDomain)) {
+            throw new BusinessException(ResponseEnum.PARAM_ERROR, "domain cannot be empty");
+        }
+        if (cleanedPath.contains(":generateContent")) {
+            return cleanedPath;
+        }
+        if (cleanedPath.contains(":streamGenerateContent")) {
+            return cleanedPath.replace(":streamGenerateContent", ":generateContent");
+        }
+        String quotedDomain = Pattern.quote(modelDomain);
+        if (cleanedPath.matches(".*/v\\d+(beta)?/models/" + quotedDomain + "/?$")) {
+            return cleanedPath + ":generateContent";
+        }
+        if (cleanedPath.matches(".*/v\\d+(beta)?/?$")) {
+            return cleanedPath + "/models/" + modelDomain + ":generateContent";
+        }
+        return appendPathSegment(cleanedPath, "/v1beta/models/" + modelDomain + ":generateContent");
+    }
+
+    private String completeOpenAICompatiblePath(String cleanedPath) {
+        if (!cleanedPath.matches(".*/chat/completions/?$")) {
+            return cleanedPath.matches(".*/v\\d+$")
+                    ? cleanedPath + "/chat/completions"
+                    : cleanedPath + "/v1/chat/completions";
+        }
+        return cleanedPath;
     }
 
     private String doPostModelApi(String url, Map<String, Object> body, HttpHeaders headers) {

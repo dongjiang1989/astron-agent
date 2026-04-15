@@ -362,11 +362,10 @@ class BotChatServiceImplUnitTest {
             botChatService.debugChatMessageBot(request, sseEmitter, sseId);
 
             verify(modelService).getDetail(eq(0), eq(1L), isNull());
-            verify(promptChatService).chatStream(argThat(json ->
-                            "openai".equals(json.getString("provider")) &&
-                                    json.getBooleanValue("managedWebSearch") &&
-                                    "test message".equals(json.getString("managedSearchQuery")) &&
-                                    "test-uid".equals(json.getString("userId"))),
+            verify(promptChatService).chatStream(argThat(json -> "openai".equals(json.getString("provider")) &&
+                    json.getBooleanValue("managedWebSearch") &&
+                    "test message".equals(json.getString("managedSearchQuery")) &&
+                    "test-uid".equals(json.getString("userId"))),
                     eq(sseEmitter),
                     eq(sseId),
                     isNull(),

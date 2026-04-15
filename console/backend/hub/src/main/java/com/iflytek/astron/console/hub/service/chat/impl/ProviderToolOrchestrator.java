@@ -14,11 +14,10 @@ import java.util.Set;
 /**
  * Shared tool orchestration for bot debug and formal chat.
  *
- * Current provider capability matrix for enabled web search:
- * - spark: native support via SparkChatRequest.enableWebSearch
- * - google: native support via Gemini tools.google_search
- * - anthropic: native support via Anthropic web_search tool + beta header
- * - other OpenAI-compatible providers: model-driven function tool calling via ifly_search
+ * Current provider capability matrix for enabled web search: - spark: native support via
+ * SparkChatRequest.enableWebSearch - google: native support via Gemini tools.google_search -
+ * anthropic: native support via Anthropic web_search tool + beta header - other OpenAI-compatible
+ * providers: model-driven function tool calling via ifly_search
  */
 final class ProviderToolOrchestrator {
 
@@ -28,8 +27,7 @@ final class ProviderToolOrchestrator {
     static final String PROVIDER_GOOGLE = "google";
     static final String PROVIDER_ANTHROPIC = "anthropic";
 
-    private ProviderToolOrchestrator() {
-    }
+    private ProviderToolOrchestrator() {}
 
     static ToolExecutionPlan resolve(String provider, String openedTool) {
         Set<String> enabledTools = parseEnabledTools(openedTool);
@@ -63,7 +61,8 @@ final class ProviderToolOrchestrator {
                 request.put("anthropicBeta", "web-search-2025-03-05");
             }
             case OPENAI_FUNCTION -> request.put("tools", buildOpenAiCompatibleSearchTools());
-            case SPARK_NATIVE -> { }
+            case SPARK_NATIVE -> {
+            }
             default -> {
             }
         }
@@ -128,8 +127,7 @@ final class ProviderToolOrchestrator {
         return tools;
     }
 
-    record ToolExecutionPlan(String provider, Set<String> enabledTools, WebSearchMode webSearchMode) {
-    }
+    record ToolExecutionPlan(String provider, Set<String> enabledTools, WebSearchMode webSearchMode) {}
 
     enum WebSearchMode {
         DISABLED,

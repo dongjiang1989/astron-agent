@@ -151,8 +151,9 @@ public class PromptChatService {
 
         try (body) {
             try {
-                String contentType = body.contentType() != null ? body.contentType().toString() : "";
-                if (!contentType.contains("text/event-stream")) {
+                MediaType contentType = body.contentType();
+                String contentTypeStr = contentType != null ? contentType.toString() : "";
+                if (!contentTypeStr.contains("text/event-stream")) {
                     String payload = body.string();
                     if (StringUtils.isNotBlank(payload)) {
                         parseSSEContent(payload, emitter, streamId, finalResult, thinkingResult, sid, traceResult, provider);

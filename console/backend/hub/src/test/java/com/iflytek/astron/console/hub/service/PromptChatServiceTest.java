@@ -148,9 +148,9 @@ class PromptChatServiceTest {
         request.put("model", "gemini-3.1-pro");
         request.put("messages", JSON.parseArray(
                 "[\n" +
-                "  {\"role\":\"system\",\"content\":\"You are helpful.\"},\n" +
-                "  {\"role\":\"user\",\"content\":\"Hello\"}\n" +
-                "]"));
+                        "  {\"role\":\"system\",\"content\":\"You are helpful.\"},\n" +
+                        "  {\"role\":\"user\",\"content\":\"Hello\"}\n" +
+                        "]"));
         request.put("url", "https://example.com/v1beta/models/gemini-3.1-pro:generateContent");
 
         when(httpClient.newCall(any(Request.class))).thenReturn(call);
@@ -196,9 +196,13 @@ class PromptChatServiceTest {
                 JSONObject body = parseRequestBody(req);
                 assertFalse(body.containsKey("managedSearchQuery"));
                 assertFalse(body.containsKey("userId"));
-                assertTrue(body.getJSONArray("messages").getJSONObject(0).getString("content")
+                assertTrue(body.getJSONArray("messages")
+                        .getJSONObject(0)
+                        .getString("content")
                         .contains("managed real-time web search"));
-                assertTrue(body.getJSONArray("messages").getJSONObject(0).getString("content")
+                assertTrue(body.getJSONArray("messages")
+                        .getJSONObject(0)
+                        .getString("content")
                         .contains("Search summary with [1]"));
             } catch (IOException e) {
                 fail(e);
