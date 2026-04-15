@@ -385,8 +385,8 @@ public class PromptChatService {
     }
 
     /**
-     * Apply managed web search directly when managedWebSearch=true without tools array.
-     * Executes search and injects results into system message, then removes the flag.
+     * Apply managed web search directly when managedWebSearch=true without tools array. Executes search
+     * and injects results into system message, then removes the flag.
      */
     private void applyManagedWebSearch(JSONObject request, ChatReqRecords chatReqRecords) {
         String query = request.getString("managedSearchQuery");
