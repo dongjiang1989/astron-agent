@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PostgreSQL dialect implementation.
- * Uses double-quote identifiers, BIGSERIAL, COMMENT ON TABLE/COLUMN, ADD COLUMN IF NOT EXISTS, etc.
+ * PostgreSQL dialect implementation. Uses double-quote identifiers, BIGSERIAL, COMMENT ON
+ * TABLE/COLUMN, ADD COLUMN IF NOT EXISTS, etc.
  */
 public class PostgresDialect implements DbDialect {
 

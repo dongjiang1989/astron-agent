@@ -7,8 +7,8 @@ import org.jooq.SQLDialect;
 import java.util.List;
 
 /**
- * MySQL dialect implementation.
- * Uses backtick identifiers, BIGINT AUTO_INCREMENT, inline COMMENT, MODIFY COLUMN, etc.
+ * MySQL dialect implementation. Uses backtick identifiers, BIGINT AUTO_INCREMENT, inline
+ * COMMENT, MODIFY COLUMN, etc.
  */
 public class MysqlDialect implements DbDialect {
 

@@ -899,7 +899,8 @@ public class ModelService extends ServiceImpl<ModelMapper, Model> {
             String currentUid = userInfo.getUid();
             Long currentSpaceId = SpaceInfoUtil.getSpaceId(); // Assuming this gets current space
 
-            // Verify that the user has access to this model by checking against the same filters as dealWithSelfModel
+            // Verify that the user has access to this model by checking against the same
+            // filters as dealWithSelfModel
             LambdaQueryWrapper<Model> wrapper = new LambdaQueryWrapper<Model>()
                     .eq(Model::getId, modelId)
                     .eq(Model::getIsDeleted, 0);
@@ -907,8 +908,7 @@ public class ModelService extends ServiceImpl<ModelMapper, Model> {
             if (currentSpaceId != null) {
                 wrapper.eq(Model::getSpaceId, currentSpaceId);
             } else {
-                wrapper.isNull(Model::getSpaceId)
-                      .eq(Model::getUid, currentUid);
+                wrapper.isNull(Model::getSpaceId).eq(Model::getUid, currentUid);
             }
 
             Model model = mapper.selectOne(wrapper);

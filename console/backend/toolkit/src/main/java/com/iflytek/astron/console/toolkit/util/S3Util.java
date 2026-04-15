@@ -34,19 +34,15 @@ import org.springframework.stereotype.Component;
 /**
  * S3 utility based on MinIO (uses a unified {@link MinioClient}).
  *
- * <p>
- * Features:
- * </p>
+ * <p>Features:
  * <ul>
  * <li>Upload with explicit size or unknown size (multipart).</li>
  * <li>Object download and deletion (single/batch).</li>
  * <li>Direct-link URL builders and presigned PUT generation.</li>
  * </ul>
  *
- * <p>
- * Thread-safety: this component holds a single {@link MinioClient} instance, initialized once in
- * {@link #init()}.
- * </p>
+ * <p>Thread-safety: this component holds a single {@link MinioClient} instance,
+ * initialized once in {@link #init()}.
  */
 @Slf4j
 @Component

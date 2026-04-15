@@ -6,15 +6,16 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for safely rendering SQL identifiers, literals, and values. Provides strict
- * validation to prevent SQL injection and unsafe usage.
+ * Utility class for safely rendering SQL identifiers, literals, and values. Provides
+ * strict validation to prevent SQL injection and unsafe usage.
  */
 public final class SqlRenderer {
 
     private SqlRenderer() {}
 
     /**
-     * Allowed identifier pattern: start with letter/underscore, followed by letters/digits/underscores
+     * Allowed identifier pattern: start with letter/underscore, followed by
+     * letters/digits/underscores
      */
     private static final Pattern IDENTIFIER = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
 
@@ -167,8 +168,8 @@ public final class SqlRenderer {
     }
 
     /**
-     * Validate that a value is a numeric long, with whitelist check. Typically used for "WHERE id IN
-     * (...)" clauses.
+     * Validate that a value is a numeric long, with whitelist check. Typically used for
+     * "WHERE id IN (...)" clauses.
      *
      * @param v the input value
      * @param field the field name for error reporting

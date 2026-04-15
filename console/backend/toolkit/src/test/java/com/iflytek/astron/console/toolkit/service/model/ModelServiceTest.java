@@ -54,7 +54,8 @@ class ModelServiceTest {
 
     @Mock
     private ModelMapper mapper;
-    @Mock
+    @Spy
+    @InjectMocks
     private LLMService llmService;
     @Mock
     private ConfigInfoMapper configInfoMapper;

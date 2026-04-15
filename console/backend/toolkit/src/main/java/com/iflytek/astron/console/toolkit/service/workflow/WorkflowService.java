@@ -3921,8 +3921,8 @@ public class WorkflowService extends ServiceImpl<WorkflowMapper, Workflow> {
             workflowReq.setExt(JSON.parseObject(workflow.getExt()));
         }
         if (StringUtils.isNotBlank(workflow.getAdvancedConfig())) {
-            workflowReq.setAdvancedConfig(JSON.parseObject(workflow.getAdvancedConfig(), new TypeReference<Map<String, Object>>() {
-            }));
+            workflowReq.setAdvancedConfig(
+                    JSON.parseObject(workflow.getAdvancedConfig(), new TypeReference<Map<String, Object>>() {}));
         }
         return workflowReq;
     }

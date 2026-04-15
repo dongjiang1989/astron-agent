@@ -578,8 +578,10 @@ public class DatabaseService extends ServiceImpl<DbInfoMapper, DbInfo> {
         DbTableField dbTableField = dbTableFieldMapper.selectById(field.getId());
 
         String oldName = dbTableField.getName();
-        String newName = (StringUtils.isNotBlank(field.getName()) && !dbTableField.getName().equals(field.getName()))
-                ? field.getName() : oldName;
+        String newName =
+                (StringUtils.isNotBlank(field.getName()) && !dbTableField.getName().equals(field.getName()))
+                        ? field.getName()
+                        : oldName;
         boolean typeChanged = StringUtils.isNotBlank(field.getType()) && !dbTableField.getType().equalsIgnoreCase(field.getType());
         boolean defaultChanged = !Objects.equals(field.getDefaultValue(), dbTableField.getDefaultValue());
         boolean commentChanged = !StringUtils.equals(field.getDescription(), dbTableField.getDescription());

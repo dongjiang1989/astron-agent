@@ -5,8 +5,8 @@ import org.jooq.SQLDialect;
 import java.util.List;
 
 /**
- * Strategy interface for database-specific SQL generation.
- * Implementations handle the syntactic differences between PostgreSQL and MySQL.
+ * Strategy interface for database-specific SQL generation. Implementations handle the
+ * syntactic differences between PostgreSQL and MySQL.
  */
 public interface DbDialect {
 
