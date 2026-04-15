@@ -408,7 +408,7 @@ public class PromptChatService {
             JSONObject firstMessage = messages.getJSONObject(0);
             if (firstMessage != null) {
                 String existingContent = firstMessage.getString("content");
-                String augmentedContent = "[managed real-time web search results: " + augmentation.summary() + "]\n" + existingContent;
+                String augmentedContent = "[managed real-time web search results: " + augmentation.summary() + "]\n" + StringUtils.defaultString(existingContent);
                 firstMessage.put("content", augmentedContent);
             }
         }

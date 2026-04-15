@@ -94,7 +94,7 @@ class S3ClientUtilTest {
         mockedMinioClient = Mockito.mock(MinioClient.class);
         minioClientMock = Mockito.mockStatic(MinioClient.class);
         MinioClient.Builder mockBuilder = Mockito.mock(MinioClient.Builder.class);
-        Mockito.when(MinioClient.builder()).thenReturn(mockBuilder);
+        minioClientMock.when(MinioClient::builder).thenReturn(mockBuilder);
         Mockito.when(mockBuilder.endpoint(Mockito.anyString())).thenReturn(mockBuilder);
         Mockito.when(mockBuilder.credentials(Mockito.anyString(), Mockito.anyString())).thenReturn(mockBuilder);
         Mockito.when(mockBuilder.region(Mockito.anyString())).thenReturn(mockBuilder);
