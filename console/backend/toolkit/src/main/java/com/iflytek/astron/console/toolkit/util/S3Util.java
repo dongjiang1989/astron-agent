@@ -34,15 +34,17 @@ import org.springframework.stereotype.Component;
 /**
  * S3 utility based on MinIO (uses a unified {@link MinioClient}).
  *
- * <p>Features:
+ * <p>
+ * Features:
  * <ul>
  * <li>Upload with explicit size or unknown size (multipart).</li>
  * <li>Object download and deletion (single/batch).</li>
  * <li>Direct-link URL builders and presigned PUT generation.</li>
  * </ul>
  *
- * <p>Thread-safety: this component holds a single {@link MinioClient} instance,
- * initialized once in {@link #init()}.
+ * <p>
+ * Thread-safety: this component holds a single {@link MinioClient} instance, initialized once in
+ * {@link #init()}.
  */
 @Slf4j
 @Component
@@ -65,9 +67,9 @@ public class S3Util {
     private int presignExpirySeconds;
 
     /**
-     * Publicly accessible endpoint used when composing URLs returned to browsers or external
-     * clients. This should point to the reverse-proxied/domain endpoint rather than the internal
-     * container address.
+     * Publicly accessible endpoint used when composing URLs returned to browsers or external clients.
+     * This should point to the reverse-proxied/domain endpoint rather than the internal container
+     * address.
      */
     @Value("${s3.remoteEndpoint:}")
     private String remoteEndpoint;

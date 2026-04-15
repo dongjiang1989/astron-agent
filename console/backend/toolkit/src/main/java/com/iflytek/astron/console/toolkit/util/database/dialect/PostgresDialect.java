@@ -24,10 +24,18 @@ public class PostgresDialect implements DbDialect {
         StringBuilder ddl = new StringBuilder();
         String table = quoteIdent(tableName);
 
-        ddl.append("CREATE TABLE ").append(table).append(" (\n")
-                .append("  ").append(quoteIdent("id")).append(" BIGSERIAL PRIMARY KEY,\n")
-                .append("  ").append(quoteIdent("uid")).append(" VARCHAR(64) NOT NULL,\n")
-                .append("  ").append(quoteIdent("create_time")).append(" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        ddl.append("CREATE TABLE ")
+                .append(table)
+                .append(" (\n")
+                .append("  ")
+                .append(quoteIdent("id"))
+                .append(" BIGSERIAL PRIMARY KEY,\n")
+                .append("  ")
+                .append(quoteIdent("uid"))
+                .append(" VARCHAR(64) NOT NULL,\n")
+                .append("  ")
+                .append(quoteIdent("create_time"))
+                .append(" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
 
         for (ColumnDef col : columns) {
             ddl.append(",\n  ").append(quoteIdent(col.name())).append(" ").append(col.sqlType());
@@ -42,8 +50,11 @@ public class PostgresDialect implements DbDialect {
 
         // Table comment
         if (StringUtils.isNotBlank(tableComment)) {
-            ddl.append("\nCOMMENT ON TABLE ").append(table)
-                    .append(" IS ").append(SqlRenderer.quoteLiteral(tableComment)).append(";");
+            ddl.append("\nCOMMENT ON TABLE ")
+                    .append(table)
+                    .append(" IS ")
+                    .append(SqlRenderer.quoteLiteral(tableComment))
+                    .append(";");
         }
 
         // System column comments
@@ -54,8 +65,13 @@ public class PostgresDialect implements DbDialect {
         // User column comments
         for (ColumnDef col : columns) {
             if (StringUtils.isNotBlank(col.comment())) {
-                ddl.append("\nCOMMENT ON COLUMN ").append(table).append(".").append(quoteIdent(col.name()))
-                        .append(" IS ").append(SqlRenderer.quoteLiteral(col.comment())).append(";");
+                ddl.append("\nCOMMENT ON COLUMN ")
+                        .append(table)
+                        .append(".")
+                        .append(quoteIdent(col.name()))
+                        .append(" IS ")
+                        .append(SqlRenderer.quoteLiteral(col.comment()))
+                        .append(";");
             }
         }
 
@@ -68,8 +84,12 @@ public class PostgresDialect implements DbDialect {
         String table = quoteIdent(tableName);
         String col = quoteIdent(column.name());
 
-        sql.append("ALTER TABLE ").append(table)
-                .append(" ADD COLUMN IF NOT EXISTS ").append(col).append(" ").append(column.sqlType());
+        sql.append("ALTER TABLE ")
+                .append(table)
+                .append(" ADD COLUMN IF NOT EXISTS ")
+                .append(col)
+                .append(" ")
+                .append(column.sqlType());
         if (column.notNull()) {
             sql.append(" NOT NULL");
         }
@@ -79,8 +99,13 @@ public class PostgresDialect implements DbDialect {
         sql.append("; ");
 
         if (StringUtils.isNotBlank(column.comment())) {
-            sql.append("COMMENT ON COLUMN ").append(table).append(".").append(col)
-                    .append(" IS ").append(SqlRenderer.quoteLiteral(column.comment())).append("; ");
+            sql.append("COMMENT ON COLUMN ")
+                    .append(table)
+                    .append(".")
+                    .append(col)
+                    .append(" IS ")
+                    .append(SqlRenderer.quoteLiteral(column.comment()))
+                    .append("; ");
         }
         return sql.toString();
     }
@@ -102,8 +127,13 @@ public class PostgresDialect implements DbDialect {
 
         // Rename if needed
         if (!mod.oldName().equals(mod.newName())) {
-            sql.append("ALTER TABLE ").append(table)
-                    .append(" RENAME COLUMN ").append(fromCol).append(" TO ").append(toCol).append("; ");
+            sql.append("ALTER TABLE ")
+                    .append(table)
+                    .append(" RENAME COLUMN ")
+                    .append(fromCol)
+                    .append(" TO ")
+                    .append(toCol)
+                    .append("; ");
         }
 
         // Build ALTER COLUMN sub-clauses
@@ -121,17 +151,28 @@ public class PostgresDialect implements DbDialect {
         }
 
         if (!alterClauses.isEmpty()) {
-            sql.append("ALTER TABLE ").append(table).append(" ")
-                    .append(String.join(", ", alterClauses)).append(";");
+            sql.append("ALTER TABLE ")
+                    .append(table)
+                    .append(" ")
+                    .append(String.join(", ", alterClauses))
+                    .append(";");
         }
 
         // Comment
         if (mod.commentChanged()) {
             if (StringUtils.isNotBlank(mod.newComment())) {
-                commentSql.append(" COMMENT ON COLUMN ").append(table).append(".").append(toCol)
-                        .append(" IS ").append(SqlRenderer.quoteLiteral(mod.newComment())).append("; ");
+                commentSql.append(" COMMENT ON COLUMN ")
+                        .append(table)
+                        .append(".")
+                        .append(toCol)
+                        .append(" IS ")
+                        .append(SqlRenderer.quoteLiteral(mod.newComment()))
+                        .append("; ");
             } else {
-                commentSql.append(" COMMENT ON COLUMN ").append(table).append(".").append(toCol)
+                commentSql.append(" COMMENT ON COLUMN ")
+                        .append(table)
+                        .append(".")
+                        .append(toCol)
                         .append(" IS NULL; ");
             }
         }

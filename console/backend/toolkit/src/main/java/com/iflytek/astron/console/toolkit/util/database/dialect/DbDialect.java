@@ -5,8 +5,8 @@ import org.jooq.SQLDialect;
 import java.util.List;
 
 /**
- * Strategy interface for database-specific SQL generation. Implementations handle the
- * syntactic differences between PostgreSQL and MySQL.
+ * Strategy interface for database-specific SQL generation. Implementations handle the syntactic
+ * differences between PostgreSQL and MySQL.
  */
 public interface DbDialect {
 
@@ -16,8 +16,8 @@ public interface DbDialect {
     /**
      * Build a CREATE TABLE DDL statement.
      *
-     * @param tableName    validated table name (unquoted)
-     * @param columns      user-defined columns (excluding system columns id/uid/create_time)
+     * @param tableName validated table name (unquoted)
+     * @param columns user-defined columns (excluding system columns id/uid/create_time)
      * @param tableComment table-level comment, or null
      * @return complete DDL string (may contain multiple statements separated by semicolons)
      */
@@ -26,8 +26,8 @@ public interface DbDialect {
     /**
      * Build an ADD COLUMN statement.
      *
-     * @param tableName  validated table name (unquoted)
-     * @param column     column to add
+     * @param tableName validated table name (unquoted)
+     * @param column column to add
      * @return DDL string (may contain multiple statements for PG comment)
      */
     String buildAddColumn(String tableName, ColumnDef column);
@@ -35,7 +35,7 @@ public interface DbDialect {
     /**
      * Build a DROP COLUMN statement.
      *
-     * @param tableName  validated table name (unquoted)
+     * @param tableName validated table name (unquoted)
      * @param columnName validated column name (unquoted)
      * @return DDL string
      */
@@ -44,7 +44,7 @@ public interface DbDialect {
     /**
      * Build a MODIFY/ALTER COLUMN statement.
      *
-     * @param tableName    validated table name (unquoted)
+     * @param tableName validated table name (unquoted)
      * @param modification column modification descriptor
      * @return DDL string (may contain multiple statements)
      */
@@ -63,7 +63,7 @@ public interface DbDialect {
      * Build a table comment statement.
      *
      * @param tableName validated table name (unquoted)
-     * @param comment   table comment text
+     * @param comment table comment text
      * @return DDL string
      */
     String buildTableComment(String tableName, String comment);

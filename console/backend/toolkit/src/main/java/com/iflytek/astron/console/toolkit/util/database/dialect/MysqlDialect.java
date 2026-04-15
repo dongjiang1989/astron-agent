@@ -7,8 +7,8 @@ import org.jooq.SQLDialect;
 import java.util.List;
 
 /**
- * MySQL dialect implementation. Uses backtick identifiers, BIGINT AUTO_INCREMENT, inline
- * COMMENT, MODIFY COLUMN, etc.
+ * MySQL dialect implementation. Uses backtick identifiers, BIGINT AUTO_INCREMENT, inline COMMENT,
+ * MODIFY COLUMN, etc.
  */
 public class MysqlDialect implements DbDialect {
 
@@ -23,10 +23,18 @@ public class MysqlDialect implements DbDialect {
         StringBuilder ddl = new StringBuilder();
         String table = quoteIdent(tableName);
 
-        ddl.append("CREATE TABLE ").append(table).append(" (\n")
-                .append("  ").append(quoteIdent("id")).append(" BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key id',\n")
-                .append("  ").append(quoteIdent("uid")).append(" VARCHAR(64) NOT NULL COMMENT 'uid',\n")
-                .append("  ").append(quoteIdent("create_time")).append(" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time'");
+        ddl.append("CREATE TABLE ")
+                .append(table)
+                .append(" (\n")
+                .append("  ")
+                .append(quoteIdent("id"))
+                .append(" BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key id',\n")
+                .append("  ")
+                .append(quoteIdent("uid"))
+                .append(" VARCHAR(64) NOT NULL COMMENT 'uid',\n")
+                .append("  ")
+                .append(quoteIdent("create_time"))
+                .append(" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time'");
 
         for (ColumnDef col : columns) {
             ddl.append(",\n  ").append(quoteIdent(col.name())).append(" ").append(col.sqlType());
@@ -57,8 +65,12 @@ public class MysqlDialect implements DbDialect {
         String table = quoteIdent(tableName);
         String col = quoteIdent(column.name());
 
-        sql.append("ALTER TABLE ").append(table)
-                .append(" ADD COLUMN ").append(col).append(" ").append(column.sqlType());
+        sql.append("ALTER TABLE ")
+                .append(table)
+                .append(" ADD COLUMN ")
+                .append(col)
+                .append(" ")
+                .append(column.sqlType());
         if (column.notNull()) {
             sql.append(" NOT NULL");
         }
@@ -88,15 +100,24 @@ public class MysqlDialect implements DbDialect {
         // modify via MODIFY COLUMN (requires full definition)
         if (!mod.oldName().equals(mod.newName())) {
             // CHANGE COLUMN old_name new_name full_definition
-            sql.append("ALTER TABLE ").append(table)
-                    .append(" CHANGE COLUMN ").append(quoteIdent(mod.oldName())).append(" ")
-                    .append(quoteIdent(mod.newName())).append(" ").append(mod.newSqlType());
+            sql.append("ALTER TABLE ")
+                    .append(table)
+                    .append(" CHANGE COLUMN ")
+                    .append(quoteIdent(mod.oldName()))
+                    .append(" ")
+                    .append(quoteIdent(mod.newName()))
+                    .append(" ")
+                    .append(mod.newSqlType());
             appendModifyTail(sql, mod);
             sql.append(";");
         } else {
             // MODIFY COLUMN col full_definition
-            sql.append("ALTER TABLE ").append(table)
-                    .append(" MODIFY COLUMN ").append(quoteIdent(mod.newName())).append(" ").append(mod.newSqlType());
+            sql.append("ALTER TABLE ")
+                    .append(table)
+                    .append(" MODIFY COLUMN ")
+                    .append(quoteIdent(mod.newName()))
+                    .append(" ")
+                    .append(mod.newSqlType());
             appendModifyTail(sql, mod);
             sql.append(";");
         }
