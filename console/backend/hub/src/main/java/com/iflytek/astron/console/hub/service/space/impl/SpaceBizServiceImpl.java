@@ -24,6 +24,7 @@ import com.iflytek.astron.console.commons.service.space.SpaceUserService;
 import com.iflytek.astron.console.commons.service.bot.ChatBotDataService;
 import com.iflytek.astron.console.hub.properties.SpaceLimitProperties;
 import com.iflytek.astron.console.hub.service.space.SpaceBizService;
+import com.iflytek.astron.console.commons.util.space.EnterpriseInfoUtil;
 import com.iflytek.astron.console.commons.util.space.OrderInfoUtil;
 import com.iflytek.astron.console.commons.util.space.SpaceInfoUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -143,6 +144,20 @@ public class SpaceBizServiceImpl implements SpaceBizService {
         if (space == null) {
             return ApiResult.error(ResponseEnum.SPACE_NOT_EXISTS);
         }
+        // Enterprise space: verify space belongs to current user's enterprise
+        if (space.getEnterpriseId() != null) {
+            Long currentEnterpriseId = EnterpriseInfoUtil.getEnterpriseId();
+            if (!Objects.equals(space.getEnterpriseId(), currentEnterpriseId)) {
+                return ApiResult.error(ResponseEnum.SPACE_USER_SPACE_NOT_BELONG_TO_ENTERPRISE);
+            }
+        } else {
+            // Personal space: verify current user is the owner
+            String uid = RequestContextUtil.getUID();
+            SpaceUser spaceUser = spaceUserService.getSpaceUserByUid(spaceId, uid);
+            if (spaceUser == null || !Objects.equals(spaceUser.getRole(), SpaceRoleEnum.OWNER.getCode())) {
+                return ApiResult.error(ResponseEnum.SPACE_USER_NOT_OWNER);
+            }
+        }
         if (spaceService.removeById(spaceId)) {
             try {
                 String uid = RequestContextUtil.getUID();
@@ -167,10 +182,22 @@ public class SpaceBizServiceImpl implements SpaceBizService {
     @Override
     @Transactional
     public ApiResult<String> updateSpace(SpaceUpdateDTO spaceUpdateDTO) {
-        if (!Objects.equals(SpaceInfoUtil.getSpaceId(), spaceUpdateDTO.getId())) {
-            return ApiResult.error(ResponseEnum.SPACE_APPLICATION_CURRENT_SPACE_INCONSISTENT);
-        }
         Space space = spaceService.getById(spaceUpdateDTO.getId());
+        if (space == null) {
+            return ApiResult.error(ResponseEnum.SPACE_NOT_EXISTS);
+        }
+        // Personal space: verify spaceId in header matches DTO id to prevent tampering
+        if (space.getEnterpriseId() == null) {
+            if (!Objects.equals(SpaceInfoUtil.getSpaceId(), spaceUpdateDTO.getId())) {
+                return ApiResult.error(ResponseEnum.SPACE_APPLICATION_CURRENT_SPACE_INCONSISTENT);
+            }
+        } else {
+            // Enterprise space: verify space belongs to current user's enterprise
+            Long currentEnterpriseId = EnterpriseInfoUtil.getEnterpriseId();
+            if (!Objects.equals(space.getEnterpriseId(), currentEnterpriseId)) {
+                return ApiResult.error(ResponseEnum.SPACE_USER_SPACE_NOT_BELONG_TO_ENTERPRISE);
+            }
+        }
         if (spaceService.checkExistByName(spaceUpdateDTO.getName(), spaceUpdateDTO.getId())) {
             return ApiResult.error(ResponseEnum.SPACE_NAME_DUPLICATE);
         }
