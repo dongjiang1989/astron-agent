@@ -160,8 +160,20 @@ class PgsqlConfig(BaseSettings):
         :param field_type: The type of the field
         :raises CustomException: If the key is not valid
         """
-        key_lower = key.lower()
-        if key_lower in DB_SQL_INVALID_KEY:
+        # Empty strings are allowed (e.g. tableName is None for CUSTOM mode)
+        if not key:
+            return
+
+        # Enforce identifier pattern (word characters only)
+        if not re.fullmatch(r"\w+", key):
+            raise CustomException(
+                err_code=CodeEnum.PG_SQL_PARAM_ERROR,
+                err_msg=f"Invalid {field_type}: {key} contains disallowed characters",
+                cause_error=f"Invalid {field_type}: {key} contains disallowed characters",
+            )
+
+        # Block exact SQL keywords
+        if key.lower() in DB_SQL_INVALID_KEY:
             raise CustomException(
                 err_code=CodeEnum.PG_SQL_PARAM_ERROR,
                 err_msg=f"Invalid {field_type}: {key} is a reserved keyword in database",

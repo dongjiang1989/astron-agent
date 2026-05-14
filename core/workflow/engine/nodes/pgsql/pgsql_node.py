@@ -163,22 +163,88 @@ class PGSqlNode(BaseNode):
         """
         return WorkflowNodeExecutionStatus.FAILED
 
+    def validate_sql_template(self, sql: str) -> None:
+        """Validate SQL template to block dangerous operations in CUSTOM mode.
+
+        :param sql: Raw SQL template string before value substitution
+        :raises CustomException: If the template contains disallowed operations
+        """
+        # Strip out string literals to avoid false positives in values
+        # Replace content inside single quotes with ''
+        stripped = re.sub(r"'(?:[^'\\]|\\.)*'", "''", sql)
+        # Remove comments (-- single line and /* multi-line */)
+        stripped = re.sub(r"--[^\n]*", "", stripped)
+        stripped = re.sub(r"/\*.*?\*/", "", stripped, flags=re.DOTALL)
+
+        # Block multi-statement SQL (semicolon outside of string literals)
+        if ";" in stripped.strip().rstrip(";"):
+            raise CustomException(
+                err_code=CodeEnum.PG_SQL_PARAM_ERROR,
+                err_msg="CUSTOM mode does not allow multiple SQL statements",
+                cause_error="SQL template contains multiple statements",
+            )
+
+        # Extract the first keyword from the cleaned SQL
+        tokens = stripped.split()
+        if not tokens:
+            raise CustomException(
+                err_code=CodeEnum.PG_SQL_PARAM_ERROR,
+                err_msg="SQL template is empty",
+                cause_error="SQL template is empty",
+            )
+
+        first_keyword = tokens[0].lower().strip(";")
+        allowed_keywords = {"select", "insert", "update", "delete", "values", "call"}
+        if first_keyword not in allowed_keywords:
+            raise CustomException(
+                err_code=CodeEnum.PG_SQL_PARAM_ERROR,
+                err_msg=f"SQL keyword '{tokens[0]}' is not allowed in CUSTOM mode",
+                cause_error=f"Disallowed SQL keyword: {tokens[0]}",
+            )
+
     def replace_placeholders(self, template: str, replacements: dict) -> str:
         """Replace placeholder variables in SQL template with actual values.
 
+        Uses SQLAlchemy's text() + bindparams() for proper value escaping
+        to prevent SQL injection. Only {{variable}} placeholders are substituted;
+        the rest of the SQL template passes through unchanged.
+
         :param template: SQL template string containing {{variable}} placeholders
         :param replacements: Dictionary mapping variable names to their values
-        :return: SQL string with placeholders replaced by actual values
+        :return: SQL string with placeholders replaced by properly escaped values
         """
-        # Compile regex pattern to match {{variable}} placeholders
-        pattern = re.compile(r"\{\{(\w+)\}\}")
+        self.validate_sql_template(template)
 
-        def replacer(match: re.Match[str]) -> str:
+        # Parse template: find all {{var}} placeholders and replace with SQLAlchemy params
+        placeholder_pattern = re.compile(r"\{\{(\w+)\}\}")
+        sql = template
+        params = {}
+        param_idx = 0
+
+        for match in placeholder_pattern.finditer(template):
             key = match.group(1)
-            # Replace with actual value or keep original if not found
-            return str(replacements.get(key, match.group(0)))
+            value = replacements.get(key)
 
-        return pattern.sub(replacer, template)
+            param_name = f"p_{param_idx}"
+            param_idx += 1
+
+            if isinstance(value, bool):
+                params[param_name] = value
+            elif value is None:
+                # NULL cannot be parameterized with bindparams, use literal directly
+                sql = sql.replace(match.group(0), "NULL", 1)
+                continue
+            else:
+                params[param_name] = value
+
+            # Replace the first occurrence of this specific placeholder
+            sql = sql.replace(match.group(0), f":{param_name}", 1)
+
+        if params:
+            stmt = text(sql).bindparams(**params)
+            return str(stmt.compile(compile_kwargs={"literal_binds": True}))
+
+        return sql
 
     def generate_insert_statement(self, data: dict) -> str:
         """Generate INSERT SQL statement from input data.
@@ -615,6 +681,12 @@ class PGSqlNode(BaseNode):
                         "exec_success", []
                     ):
                         pgsql_id = pgsql_result.get("id", "")
+                        if not isinstance(pgsql_id, int):
+                            raise CustomException(
+                                err_code=CodeEnum.PG_SQL_PARAM_ERROR,
+                                err_msg="Invalid database ID returned from INSERT operation",
+                                cause_error=f"Expected integer ID, got {type(pgsql_id).__name__}: {pgsql_id}",
+                            )
                         pgsql_config.dml = (
                             f"SELECT * FROM {self.tableName} WHERE id = {pgsql_id};"
                         )
