@@ -194,7 +194,7 @@ class PGSqlNode(BaseNode):
             )
 
         first_keyword = tokens[0].lower().strip(";")
-        allowed_keywords = {"select", "insert", "update", "delete", "values", "call"}
+        allowed_keywords = {"select", "insert", "update", "delete", "values", "call", "with", "explain"}
         if first_keyword not in allowed_keywords:
             raise CustomException(
                 err_code=CodeEnum.PG_SQL_PARAM_ERROR,
